@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Lovable Bot Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        input { width: 70%; padding: 10px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; cursor: pointer; background: #0078d4; color: white; border: none; border-radius: 5px; }
+        #logs { 
+            background: #000; 
+            color: #0f0; 
+            height: 400px; 
+            overflow-y: scroll; 
+            padding: 10px; 
+            margin-top: 20px; 
+            font-family: monospace; 
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lovable Bot Control</h1>
+        <input type="text" id="inviteLink" placeholder="Cole o link de convite aqui...">
+        <button onclick="startBot()">Iniciar Bot</button>
+        
+        <div id="logs">-- Aguardando início --<br></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const logsDiv = document.getElementById('logs');
+
+        socket.on('log', (data) => {
+            logsDiv.innerHTML += data.replace(/\n/g, '<br>');
+            logsDiv.scrollTop = logsDiv.scrollHeight; // Auto-scroll
+        });
+
+        async function startBot() {
+            const inviteLink = document.getElementById('inviteLink').value;
+            const res = await fetch('/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inviteLink })
+            });
+            const data = await res.json();
+            if(data.error) alert(data.error);
+        }
+    </script>
+</body>
+</html>
