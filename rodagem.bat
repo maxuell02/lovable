@@ -2,30 +2,26 @@
 setlocal ENABLEDELAYEDEXPANSION
 cd /d "%~dp0"
 
-set "COUNT="
-if "%~1"=="" (
-  set /p COUNT=Quantas instancias deseja abrir? 
-) else (
-  set "COUNT=%~1"
-)
-if not defined COUNT set "COUNT=1"
-
-rem Solicitar ou receber link de convite
+rem 1. Solicitar obrigatoriamente o link de convite
 set "INVITE="
-if "%~2"=="" (
+if "%~1"=="" (
   set /p INVITE=Informe o link de convite (ex: https://lovable.dev/invite/XXXXXX): 
 ) else (
-  set "INVITE=%~2"
+  set "INVITE=%~1"
 )
 
 rem Validação simples do link
 echo %INVITE% | findstr /I /C:"/invite/" >nul
 if errorlevel 1 (
   echo Link de convite invalido. Deve conter "/invite/".
+  pause
   exit /b 1
 )
 
-rem Atualizar invite.json com o link informado
+rem 2. Definir o número de instâncias automaticamente como 1
+set "COUNT=1"
+
+rem 3. Atualizar o ficheiro invite.json com o link informado
 set "ROOT=%~dp0"
 powershell -NoProfile -Command ^
   "$path = Join-Path $env:ROOT 'invite.json';" ^
@@ -33,6 +29,8 @@ powershell -NoProfile -Command ^
   "$json = $obj | ConvertTo-Json;" ^
   "Set-Content -Path $path -Value $json -Encoding UTF8"
 
+rem 4. Iniciar a execução
+echo Iniciando sessao com o convite: %INVITE%
 for /l %%I in (1,1,%COUNT%) do (
   start "OUTD-%%I" cmd /c node "%~dp0finish-him.mjs"
 )
